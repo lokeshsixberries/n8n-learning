@@ -1,0 +1,97 @@
+{
+    "nodes": [
+      {
+        "parameters": {
+          "events": ["pull_request"],
+          "owner": "YOUR_GITHUB_USERNAME",
+          "repository": "YOUR_REPO_NAME"
+        },
+        "name": "GitHub Trigger",
+        "type": "n8n-nodes-base.githubTrigger",
+        "typeVersion": 1,
+        "position": [250, 300],
+        "credentials": {
+          "githubApi": "Your GitHub Credentials"
+        }
+      },
+      {
+        "parameters": {
+          "functionCode": "return [{\n  body: `Thanks for raising this PR 🚀. Automatic review started...\\n\\n✅ Code looks fine to merge.`\n}];"
+        },
+        "name": "Prepare Review Comment",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [500, 300]
+      },
+      {
+        "parameters": {
+          "resource": "issue",
+          "operation": "createComment",
+          "owner": "YOUR_GITHUB_USERNAME",
+          "repository": "YOUR_REPO_NAME",
+          "issueNumber": "={{$json[\"number\"]}}",
+          "body": "={{$json[\"body\"]}}"
+        },
+        "name": "Add PR Comment",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1,
+        "position": [750, 300],
+        "credentials": {
+          "githubApi": "Your GitHub Credentials"
+        }
+      },
+      {
+        "parameters": {
+          "resource": "pullRequest",
+          "operation": "merge",
+          "owner": "YOUR_GITHUB_USERNAME",
+          "repository": "YOUR_REPO_NAME",
+          "pullRequestNumber": "={{$json[\"number\"]}}",
+          "mergeMethod": "merge"
+        },
+        "name": "Merge PR",
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1,
+        "position": [1000, 300],
+        "credentials": {
+          "githubApi": "Your GitHub Credentials"
+        }
+      }
+    ],
+    "connections": {
+      "GitHub Trigger": {
+        "main": [
+          [
+            {
+              "node": "Prepare Review Comment",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Review Comment": {
+        "main": [
+          [
+            {
+              "node": "Add PR Comment",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Add PR Comment": {
+        "main": [
+          [
+            {
+              "node": "Merge PR",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+  
